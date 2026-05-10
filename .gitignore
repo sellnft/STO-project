@@ -1,0 +1,21 @@
+# py cache
+__pycache__/
+*.py[cod]
+
+# venv
+.venv/
+venv/
+backend/venv/
+
+# env
+.env
+backend/.env
+*.env
+
+# IDE
+.vscode/
+.idea/
+
+# os
+.DS_Store
+Thumbs.db
