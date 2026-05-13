@@ -1,0 +1,193 @@
+﻿.page {
+  min-height: 100vh;
+  margin: 0;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #d5d8dd;
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  background: #f3f4f6;
+  border: 1px solid #c9ced6;
+  border-radius: 12px;
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.card h1 {
+  margin: 0;
+  text-align: center;
+  font-size: 34px;
+  line-height: 1.1;
+  color: #111827;
+}
+
+.card h2 {
+  margin: 8px 0 14px;
+  text-align: center;
+  font-size: 28px;
+  line-height: 1.15;
+  color: #111827;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form label {
+  color: #111827;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.form input,
+.form select,
+.primary-btn,
+.secondary-btn,
+.modal-cancel-btn {
+  height: 44px;
+  border-radius: 10px;
+  font-size: 18px;
+  padding: 0 14px;
+  box-sizing: border-box;
+}
+
+.form input,
+.form select {
+  border: 1px solid #c7ccd4;
+  background: #ffffff;
+}
+
+.primary-btn,
+.secondary-btn,
+.modal-cancel-btn {
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.primary-btn {
+  background: #0f6fc6;
+  color: #ffffff;
+  margin-top: 6px;
+}
+
+.primary-btn:hover {
+  background: #0b5ca6;
+}
+
+.secondary-btn {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.secondary-btn:hover {
+  background: #d4d8de;
+}
+
+.hint {
+  margin: 2px 0 0;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.error-text {
+  margin: 2px 0 0;
+  text-align: center;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.home-card {
+  max-width: 380px;
+}
+
+.home-card .hint {
+  margin-bottom: 8px;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 27, 38, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal {
+  width: 100%;
+  max-width: 480px;
+  background: #f3f4f6;
+  border: 1px solid #c9ced6;
+  border-radius: 12px;
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.modal h3 {
+  margin: 0 0 14px;
+  text-align: center;
+  color: #111827;
+  font-size: 36px;
+  line-height: 1.1;
+}
+
+.modal-form {
+  gap: 10px;
+}
+
+.modal-form label {
+  font-size: 18px;
+}
+
+.modal-form input,
+.modal-form .primary-btn,
+.modal-cancel-btn {
+  font-size: 18px;
+  height: 44px;
+  border-radius: 10px;
+}
+
+.modal-cancel-btn {
+  border: 1px solid #c7ccd4;
+  background: #ffffff;
+  color: #111827;
+}
+
+.modal-cancel-btn:hover {
+  background: #f8fafc;
+}
+
+@media (max-width: 800px) {
+  .page {
+    padding: 14px;
+  }
+
+  .card,
+  .modal {
+    max-width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .card h1 {
+    font-size: 30px;
+  }
+
+  .card h2 {
+    font-size: 24px;
+  }
+
+  .modal h3 {
+    font-size: 28px;
+  }
+}

@@ -1,21 +1,20 @@
-# py cache
-__pycache__/
-*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+.eggs/
 
-# venv
-.venv/
-venv/
-backend/venv/
 
-# env
-.env
-backend/.env
-*.env
+build/
+.cache/
 
-# IDE
-.vscode/
-.idea/
+*.sqlite3
+*.db
 
-# os
-.DS_Store
-Thumbs.db
+.env.*
+!.env.example
