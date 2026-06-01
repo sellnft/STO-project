@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.cars import Car
+    from app.models.repairs import Repair
 
 FULL_NAME_ALLOWED_FORMAT = r"^[А-Я][а-я]+\s[А-Я][а-я]+\s[А-Я][а-я]+$"
 PASSPORT_ALLOWED_FORMAT = r"^\d{4}\s?\d{6}$"
@@ -65,3 +66,8 @@ class Owner(Base):
     
     cars: Mapped[list["Car"]] = relationship("Car", back_populates="owner", cascade="all, delete-orphan")
     user = relationship("User", back_populates="owner_profile")
+    repairs: Mapped[list["Repair"]] = relationship(
+        "Repair", 
+        back_populates="owner", 
+        cascade="all, delete-orphan"
+    )

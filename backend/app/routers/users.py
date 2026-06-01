@@ -1,45 +1,30 @@
 from pydantic import BaseModel
-from fastapi import APIRouter, HTTPException, Form
-from app.database import async_session_maker
-from app.models.users import User
-from app.models.owners import Owner
+from fastapi import APIRouter, HTTPException, Form, status
 from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
-import uuid
+
+from app.services.auth import create_access_token
+from app.database import async_session_maker
+from app.models.users import User
+from app.models.owners import Owner
+from app.models.employees import Employee
 
 router = APIRouter(prefix="/register", tags=["Registration"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-register_sessions = {}
-
-#class OwnerRegister(BaseModel):
-#    full_name: str
-#    address: str
-#    age: int
-#    passport_number: str
-#    phone: str
 
 class UserResponse(BaseModel):
     id: int
     username: str
     role: str
 
-class MechanicRegister(BaseModel):
-    full_name: str
-    specialization: str
-    rank: str
-
-class BasicRegistration(BaseModel):
-    username: str
-    password: str
-    role: str
-
-class Login(BaseModel):
+class LoginResponse(BaseModel):
+    status_code: int
     message: str
 
-class UserLogin(BaseModel):
-    username: str
-    password: str
+#class UserLogin(BaseModel):
+#    username: str
+#    password: str
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
@@ -88,31 +73,54 @@ async def register_owner(user_id: int, full_name: str = Form(...), address: str 
             raise HTTPException(status_code=409, detail="User role isn't owner")
     return {"message": "Success"}
 
-#@router.post("/mechanics")
-#async def register_mechanic(user_id: int, full_name: str = Form(...), specialization: str = Form(...), rank: int = Form(...)):
+@router.post("/employees")
+async def register_mechanic(user_id: int, full_name: str = Form(...), specialization: str = Form(...), rank: int = Form(...)):
+    async with async_session_maker() as session:
+        user_db = await session.scalar(select(User).where(User.id == user_id))
 
+        if user_db is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        if user_db.role == "mechanic":
+            mechanic_db = await session.scalar(select(Employee).where(Employee.user_id == user_id))
+
+            if mechanic_db:
+                raise HTTPException(status_code=409, detail="Mechanic already exists")
+            
+            new_mechanic = Employee(user_id=user_id, full_name=full_name, specialization=specialization, rank=rank)
+
+            try:
+                session.add(new_mechanic)
+                await session.commit()
+                await session.refresh(new_mechanic)
+            except IntegrityError:
+                await session.rollback()
+                return HTTPException(status_code=409, detail="Mechanic already exist")
+        else:
+            raise HTTPException(status_code=409, detail="User role isn't mechanic")
+    return {"message": "Success"}
         
 
 
-@router.post("/login", response_model=Login)
-async def login_user(user: UserLogin):
+@router.post("/login")
+async def login_user(username: str = Form(...), password: str = Form()):
     async with async_session_maker() as session:
-        user_db = await session.execute(select(User).where(User.username == user.username))
+        user_db = await session.execute(select(User).where(User.username == username))
         user_db = user_db.scalar_one_or_none()
 
-        if user_db:
-            is_password_correct = verify_password(user.password, user_db.password_hash)
+        if not user_db:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-            if is_password_correct:
-                return Login(message="Success")
-    
-    return Login(message="Incorrect data")
+        is_password_correct = verify_password(password, user_db.password_hash)
 
-@router.get("/users")
-async def all_users():
-    async with async_session_maker() as session:
-        users = await session.scalars(select(User))
-        users = users.all()
-
-    return [{"username: ": user.username,
-             "role": user.role} for user in users]
+        if not is_password_correct:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
+        access_token = create_access_token({
+            "sub": str(user_db.id),
+            "role": user_db.role
+        })
+        return {
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
+        

@@ -8,8 +8,8 @@ if TYPE_CHECKING:
     from app.models.repairs import Repair
 
 
-LICENSE_PLATE_ALLOWED_LETTERS = "АВЕКМНОРСТУХ"
-LICENSE_PLATE_FORMAT = rf"^[0-9]{{1}}[{LICENSE_PLATE_ALLOWED_LETTERS}]{{3}}[0-9]{{2}}[0-9]{{2,3}}$"
+# LICENSE_PLATE_ALLOWED_LETTERS = "АВЕКМНОРСТУХ"
+# LICENSE_PLATE_FORMAT = rf"^[0-9]{{1}}[{LICENSE_PLATE_ALLOWED_LETTERS}]{{3}}[0-9]{{2}}[0-9]{{2,3}}$"
 
 class Car(Base):
     __tablename__ = "cars"
@@ -41,7 +41,7 @@ class Car(Base):
     
     license_plate: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
-    @validates("license_plate")
+    '''@validates("license_plate")
     def validateLicensePlate(self, key, licensePlate):
         if not licensePlate:
             raise ValueError("Госномер не может быть пустым!")
@@ -51,7 +51,7 @@ class Car(Base):
         for letter in letters:
             if letter not in LICENSE_PLATE_ALLOWED_LETTERS:
                 raise ValueError("Используются недопустимые символы!")
-        return licensePlate
+        return licensePlate'''
     
     owner_id: Mapped[int] = mapped_column(Integer, ForeignKey("owners.id", ondelete="CASCADE"), nullable=False)
 

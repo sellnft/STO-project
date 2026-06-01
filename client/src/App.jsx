@@ -1,5 +1,11 @@
 ﻿import './App.css'
 import { useEffect, useState } from 'react'
+import LoginForm from './components/LoginForm'
+import OwnerQuestionnaireModal from './components/OwnerQuestionnaireModal'
+import EmployeeQuestionnaireModal from './components/EmployeeQuestionnaireModal'
+import OwnerDashboard from './components/OwnerDashboard'
+import MechanicDashboard from './components/MechanicDashboard'
+import AdminDashboard from './components/AdminDashBoard'
 
 const API_BASE = 'http://127.0.0.1:8000'
 
@@ -40,15 +46,7 @@ function LoginPage() {
   return (
     <main className="page">
       <PageCard title="СТО" subtitle="Вход">
-        <form action={`${API_BASE}/register/login`} method="post" className="form">
-          <label htmlFor="login-username">Юзернейм</label>
-          <input id="login-username" type="text" name="username" required />
-
-          <label htmlFor="login-password">Пароль</label>
-          <input id="login-password" type="password" name="password" required />
-
-          <button type="submit" className="primary-btn">Войти</button>
-        </form>
+        <LoginForm action={`${API_BASE}/register/login`} />
       </PageCard>
     </main>
   )
@@ -57,18 +55,20 @@ function LoginPage() {
 function RegisterPage() {
   const [role, setRole] = useState('owner')
   const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false)
-  const [ownerUserId, setOwnerUserId] = useState(null)
+  const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false)
+  const [registeredUserId, setRegisteredUserId] = useState(null)
+
   const [ownerFullName, setOwnerFullName] = useState('')
+
+  const [employeeFullName, setEmployeeFullName] = useState('')
+  const [employeeSpecialization, setEmployeeSpecialization] = useState('')
+  const [employeeRank, setEmployeeRank] = useState('')
+
   const [registerError, setRegisterError] = useState('')
 
   const handleOpenQuestionnaire = async (event) => {
     event.preventDefault()
     setRegisterError('')
-
-    if (role !== 'owner') {
-      setRegisterError('Анкета механика пока не реализована.')
-      return
-    }
 
     const form = event.currentTarget.form
     const formData = new FormData(form)
@@ -86,32 +86,36 @@ function RegisterPage() {
         return
       }
 
-      setOwnerUserId(data.id)
-      setIsOwnerModalOpen(true)
+      setRegisteredUserId(data.id)
+
+      if (role === 'owner') {
+        setIsOwnerModalOpen(true)
+        return
+      }
+
+      if (role === 'mechanic') {
+        setIsEmployeeModalOpen(true)
+      }
     } catch {
       setRegisterError('Не удалось связаться с сервером.')
     }
-  }
-
-  const closeOwnerModal = () => {
-    setIsOwnerModalOpen(false)
   }
 
   const handleOwnerSubmit = async (event) => {
     event.preventDefault()
     setRegisterError('')
 
-    if (!ownerUserId) {
+    if (!registeredUserId) {
       setRegisterError('Не найден user_id. Повторите регистрацию.')
       return
     }
 
     const formData = new FormData(event.currentTarget)
-    formData.append('user_id', String(ownerUserId))
+    formData.append('user_id', String(registeredUserId))
     formData.append('full_name', ownerFullName)
 
     try {
-      const response = await fetch(`${API_BASE}/register/owners?user_id=${ownerUserId}`, {
+      const response = await fetch(`${API_BASE}/register/owners?user_id=${registeredUserId}`, {
         method: 'POST',
         body: formData,
       })
@@ -123,10 +127,45 @@ function RegisterPage() {
         return
       }
 
-      closeOwnerModal()
+      setIsOwnerModalOpen(false)
       navigateTo('/login')
     } catch {
       setRegisterError('Не удалось сохранить анкету владельца.')
+    }
+  }
+
+  const handleEmployeeSubmit = async (event) => {
+    event.preventDefault()
+    setRegisterError('')
+
+    if (!registeredUserId) {
+      setRegisterError('Не найден user_id. Повторите регистрацию.')
+      return
+    }
+
+    const formData = new FormData(event.currentTarget)
+    formData.append('user_id', String(registeredUserId))
+    formData.append('full_name', employeeFullName)
+    formData.append('specialization', employeeSpecialization)
+    formData.append('rank', employeeRank)
+
+    try {
+      const response = await fetch(`${API_BASE}/register/employees?user_id=${registeredUserId}`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setRegisterError(data.detail || 'Ошибка сохранения анкеты механика.')
+        return
+      }
+
+      setIsEmployeeModalOpen(false)
+      navigateTo('/login')
+    } catch {
+      setRegisterError('Не удалось сохранить анкету механика.')
     }
   }
 
@@ -160,39 +199,25 @@ function RegisterPage() {
         </form>
       </PageCard>
 
-      {isOwnerModalOpen && (
-        <div className="modal-overlay" onClick={closeOwnerModal}>
-          <section className="modal" onClick={(event) => event.stopPropagation()}>
-            <h3>Анкета владельца</h3>
-            <form onSubmit={handleOwnerSubmit} className="form modal-form">
-              <label htmlFor="owner-fullname">ФИО</label>
-              <input
-                id="owner-fullname"
-                type="text"
-                name="full_name"
-                value={ownerFullName}
-                onChange={(event) => setOwnerFullName(event.target.value)}
-                required
-              />
+      <OwnerQuestionnaireModal
+        isOpen={isOwnerModalOpen}
+        fullName={ownerFullName}
+        onFullNameChange={setOwnerFullName}
+        onSubmit={handleOwnerSubmit}
+        onClose={() => setIsOwnerModalOpen(false)}
+      />
 
-              <label htmlFor="owner-address">Адрес</label>
-              <input id="owner-address" type="text" name="address" required />
-
-              <label htmlFor="owner-age">Возраст</label>
-              <input id="owner-age" type="number" name="age" min="18" max="99" required />
-
-              <label htmlFor="owner-passport">Номер и серия паспорта</label>
-              <input id="owner-passport" type="text" name="passport_number" placeholder="1234 567890" required />
-
-              <label htmlFor="owner-phone">Контактный телефон</label>
-              <input id="owner-phone" type="tel" name="phone" placeholder="+7XXXXXXXXXX" required />
-
-              <button type="submit" className="primary-btn">Зарегистрироваться</button>
-              <button type="button" className="modal-cancel-btn" onClick={closeOwnerModal}>Отмена</button>
-            </form>
-          </section>
-        </div>
-      )}
+      <EmployeeQuestionnaireModal
+        isOpen={isEmployeeModalOpen}
+        fullName={employeeFullName}
+        specialization={employeeSpecialization}
+        rank={employeeRank}
+        onFullNameChange={setEmployeeFullName}
+        onSpecializationChange={setEmployeeSpecialization}
+        onRankChange={setEmployeeRank}
+        onSubmit={handleEmployeeSubmit}
+        onClose={() => setIsEmployeeModalOpen(false)}
+      />
     </main>
   )
 }
@@ -212,6 +237,18 @@ function App() {
 
   if (path === '/register') {
     return <RegisterPage />
+  }
+
+  if (path === '/owner') {
+    return <OwnerDashboard />
+  }
+
+  if (path === '/mechanic') {
+    return <MechanicDashboard />;
+  }
+
+  if (path === '/admin') {
+    return <AdminDashboard />
   }
 
   return <HomePage />
