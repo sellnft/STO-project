@@ -11,9 +11,7 @@ def test_get_defects():
 
 
 def test_full_flow():
-    """Полный сценарий: регистрация -> анкета -> заявка -> логин механика -> взятие -> завершение"""
     
-    # 1. Создаём владельца
     owner_username = f"owner_{int(time.time())}"
     print(f"\n1. Регистрация владельца: {owner_username}")
     
@@ -26,7 +24,6 @@ def test_full_flow():
     owner_id = reg_resp.json()["id"]
     print(f"   Владелец создан, ID: {owner_id}")
     
-    # 2. Заполняем анкету владельца
     print(f"2. Заполнение анкеты владельца")
     owner_data = {
         "full_name": "Тестов Тест Тестович",
@@ -39,7 +36,6 @@ def test_full_flow():
     assert owner_resp.status_code == 200, f"Ошибка анкеты: {owner_resp.text}"
     print(f"   Анкета заполнена")
     
-    # 3. Логин владельца и создание заявки
     print(f"3. Логин владельца")
     login_resp = requests.post(f"{API_BASE}/register/login", data={
         "username": owner_username,
@@ -65,7 +61,6 @@ def test_full_flow():
     repair_id = repair_resp.json()["repair_id"]
     print(f"   Заявка создана, ID: {repair_id}")
     
-    # 5. Создаём механика
     mechanic_username = f"mechanic_{int(time.time())}"
     print(f"5. Регистрация механика: {mechanic_username}")
     
@@ -78,7 +73,6 @@ def test_full_flow():
     mechanic_id = mech_reg.json()["id"]
     print(f"   Механик создан, ID: {mechanic_id}")
     
-    # 6. Заполняем анкету механика
     print(f"6. Заполнение анкеты механика")
     mech_data = {
         "full_name": "Тестов Механик Тестович",
@@ -89,7 +83,6 @@ def test_full_flow():
     assert mech_owner.status_code == 200, f"Ошибка анкеты механика: {mech_owner.text}"
     print(f"   Анкета механика заполнена")
     
-    # 7. Логин механика и взятие заявки
     print(f"7. Логин механика")
     mech_login = requests.post(f"{API_BASE}/register/login", data={
         "username": mechanic_username,
@@ -104,7 +97,6 @@ def test_full_flow():
     assert take_resp.status_code == 200, f"Ошибка взятия заявки: {take_resp.text}"
     print(f"   Заявка взята в работу")
     
-    # 9. Завершение ремонта
     print(f"9. Завершение ремонта")
     complete_data = {"work_cost": 5000, "parts_cost": 2500}
     complete_resp = requests.post(f"{API_BASE}/mechanic/end-application/{repair_id}", json=complete_data, headers=mech_headers)
